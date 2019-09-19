@@ -73,7 +73,7 @@ The Pacman map is now divided into two halves: blue (right) and red (left). Red 
 agent is a ghost. When crossing into enemy territory, the agent becomes a Pacman.
 
 ### Scoring:
- When a Pacman eats a food dot, the food is permanently removed and one point is scored for that Pacman's team. Red team scores are positive, while Blue team scores are negative.
+ When a Pacman eats a food dot, the food is permanently removed and is scored when that Pacman comes back *home*. Red team scores are positive, while Blue team scores are negative.
 
 ### Eating Pacman:
  When a Pacman is eaten by an opposing ghost, the Pacman returns to its starting position (as a ghost). No points are awarded for eating an opponent.
