@@ -301,10 +301,10 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         
         #find best possible Attack Coordinates
         layoutInfo = []
-        x = (gameState.data.layout.width - 2) / 2
+        x = (gameState.data.layout.width - 2) // 2
         if not self.red:
             x +=1
-        y = ( gameState.data.layout.height - 2 )/ 2
+        y = ( gameState.data.layout.height - 2 )// 2
         layoutInfo.extend((gameState.data.layout.width , gameState.data.layout.height ,x ,y))
        
         self.initialTarget = []
@@ -573,10 +573,10 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         """
         Find the best possible defense area by calculating the centre of the maze.
         """    
-        mazeCentreX = (gameState.data.layout.width - 2) / 2
+        mazeCentreX = (gameState.data.layout.width - 2) // 2
         if not self.red:
             mazeCentreX += 1
-        mazeCentreY = (gameState.data.layout.height - 2) / 2
+        mazeCentreY = (gameState.data.layout.height - 2) // 2
 
         self.defenceRegion = []
         for i in range(1, gameState.data.layout.height - 1):
