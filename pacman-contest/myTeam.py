@@ -7,7 +7,7 @@ from util import nearestPoint
 import math
 
 #################
-# Team creation #
+# Team Pac-Champs #
 #################
 
 def createTeam(firstIndex, secondIndex, isRed,
