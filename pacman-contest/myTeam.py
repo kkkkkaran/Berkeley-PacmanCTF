@@ -400,6 +400,69 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         self.counter = 0
 
 
+
+    def aStarSearch(self, startPosition, gameState, goalPositions, attackPacmen=True):
+        """
+        Finds the distance between the agent with the given index and its nearest goalPosition
+        """
+
+        walls = gameState.getWalls().asList()
+        # actionList = gameState.get
+        directionList = [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]
+        directionVectors = [Actions.directionToVector(eachAction) for eachAction in directionList]
+
+        opponentIndices = self.getOpponents(gameState)
+        # opponentLocations = [gameState.getAgentPosition(i) for i in opponentIndices if self.isGhost(gameState, i) and self.isPacman(gameState, self.index)]
+        opponentLocations = []
+        for i in opponentIndices:
+            if self.isGhost(gameState, i) and self.isPacman(gameState, self.index):
+                opponentLocations.append(gameState.getAgentPosition(i))
+
+        if attackPacmen:
+            attackablePacmen = []
+            for i in opponentIndices:
+                if self.isPacman(gameState, i) and self.isGhost(gameState, self.index):
+                    attackablePacmen.append(gameState.getAgentPosition(i))
+            # attackablePacmen = [gameState.getAgentPosition(i) for i in opponentIndices if self.isPacman(gameState, i) and self.isGhost(gameState, self.index)]
+            goalPositions.extend(attackablePacmen)
+
+        # Values are stored a 3-tuples, (Position, Path, TotalCost)
+
+        presentPosition, presentPath, presentTotalCost = startPosition, [], 0
+        # Priority queue uses the maze distance between the entered point and its closest goal position to decide which comes first
+        priorityQueue = util.PriorityQueueWithFunction(lambda entry: entry[2] + (float('inf') if entry[0] in opponentLocations else 0) + (min(util.manhattanDistance(entry[0], endPosition) for endPosition in goalPositions)))
+
+        # Keeps track of visited positions
+        traversedPositions = set([presentPosition])
+
+        while presentPosition not in goalPositions:
+
+            possiblePositions = []
+            for vector, action in zip(directionVectors, directionList):
+                possiblePositions.append(((presentPosition[0] + vector[0], presentPosition[1] + vector[1]), action))
+
+            legalPositions = []
+            for position, action in possiblePositions:
+                if position not in walls:
+                    legalPositions.append((position, action))
+
+            # possiblePositions = [((presentPosition[0] + vector[0], presentPosition[1] + vector[1]), action) for vector, action in zip(directionVectors, directionList)]
+            # legalPositions = [(position, action) for position, action in possiblePositions if position not in walls]
+
+            for position, action in legalPositions:
+                if position not in traversedPositions:
+                    traversedPositions.add(position)
+                    priorityQueue.push((position, presentPath + [action], presentTotalCost + 1))
+
+            # This shouldn't ever happen...But just in case...
+            if len(priorityQueue.heap) == 0:
+                return None
+            else:
+                presentPosition, presentPath, presentTotalCost = priorityQueue.pop()
+
+        return presentPath
+
+
     def setDefensiveArea(self ,gameState):
 
         """
@@ -528,13 +591,15 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         while i < len(candAct):
             a = candAct[i]
             nextState = gameState.generateSuccessor(self.index, a)
-            newpos = nextState.getAgentPosition(self.index)
+            newpos = self.aStarSearch(gameState.getAgentPosition(self.index), gameState, [self.GoToSpot]) or [Directions.STOP]
             awsomeMoves.append(a)
             fvalues.append(self.getMazeDistance(newpos, self.aim))
             i = i + 1
-
-
+            
         best = min(fvalues)
         bestActions = [a for a, v in zip(awsomeMoves, fvalues) if v == best]
         bestAction = random.choice(bestActions)
         return bestAction
+
+
+
