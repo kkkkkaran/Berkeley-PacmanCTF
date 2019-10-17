@@ -35,7 +35,9 @@ def createTeam(firstIndex, secondIndex, isRed,
 
 
 class ReflexCaptureAgent(CaptureAgent):
-
+    '''
+    Methods inherited from the baselineTeam.py
+    '''
     
     def getSuccessor(self, gameState, action):
         successor = gameState.generateSuccessor(self.index, action)
@@ -46,26 +48,25 @@ class ReflexCaptureAgent(CaptureAgent):
         else:
             return successor
 
-    def evaluate(self, gameState, action):
- 
-
+    def evaluate(self, gameState, action): 
         features = self.evaluateAttackParameters(gameState, action)
         weights = self.getCostOfAttackParameter(gameState, action)
         return features * weights
  
     def evaluateAttackParameters(self, gameState, action):
- 
         features = util.Counter()
         successor = self.getSuccessor(gameState, action)
         features['successorScore'] = self.getScore(successor)
         return features
 
     def getCostOfAttackParameter(self, gameState, action):
- 
         return {'successorScore': 1.0}
 
-#Inheriting properties of Base Class
+
 class OffensiveReflexAgent(ReflexCaptureAgent):
+    '''
+    Inheriting properties of Base Class
+    '''
     def __init__(self, index):
         CaptureAgent.__init__(self, index)        
         self.presentCoordinates = (-5 ,-5)
@@ -152,8 +153,10 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
 
         return features
     
-
     def getCostOfAttackParameter(self, gameState, action):
+        '''
+        Setting the weights manually after many iterations
+        '''
 
         if self.attack:
             if self.shouldReturn is True:
@@ -224,7 +227,8 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             self.hasStopped = 1
         if self.presentCoordinates == self.initialTarget[0]:
             self.hasStopped = 0
- 
+
+        # find next possible best move 
         if self.hasStopped == 1:
             legalActions = gameState.getLegalActions(self.index)
             legalActions.remove(Directions.STOP)
@@ -241,7 +245,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             realLastCapsuleLen = self.prevCapsuleLeft
             realLastFoodLen = len(self.lastFood)
 
-           
+            # Set returned = 1 when pacman has secured some food and should to return back home           
             if len(self.presentFoodList) < len(self.lastFood):
                 self.shouldReturn = True
             self.lastFood = self.presentFoodList
@@ -250,8 +254,8 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
            
             if not gameState.getAgentState(self.index).isPacman:
                 self.shouldReturn = False
-            
-           
+
+            # checks the attack situation           
             remainingFoodList = self.getFood(gameState).asList()
             remainingFoodSize = len(remainingFoodList)
     
@@ -272,14 +276,19 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             actionsBase = gameState.getLegalActions(self.index)
             actionsBase.remove(Directions.STOP)
 
-        
+            # distance to closest enemy        
             distanceToEnemy = 999999
             enemies = [gameState.getAgentState(i) for i in self.getOpponents(gameState)]
             invaders = [a for a in enemies if not a.isPacman and a.getPosition() != None and a.scaredTimer == 0]
             if len(invaders) > 0:
                 distanceToEnemy = min([self.getMazeDistance(self.presentCoordinates, a.getPosition()) for a in invaders])
             
-            
+            '''
+            Capsule eating:
+            -> If there is capsule available then capsulePower is True.
+            -> If enemy Distance is less than 5 then capsulePower is False.
+            -> If pacman scored a food then return to home capsulePower is False.
+            '''
             if self.capsuleLeft < realLastCapsuleLen:
                 self.capsulePower = True
                 self.eatenFood = 0
@@ -342,8 +351,6 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
             return bestAction
 
 
-
-
 class DefensiveReflexAgent(ReflexCaptureAgent):
     def __init__(self, index):
         CaptureAgent.__init__(self, index)
@@ -356,6 +363,9 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         self.setPatrolPoint(gameState)
 
     def setPatrolPoint(self ,gameState):
+        '''
+        Look for center of the maze for patrolling
+        '''
         x = (gameState.data.layout.width - 2) // 2
         if not self.red:
             x += 1
@@ -370,8 +380,6 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 self.patrolPoints.remove(self.patrolPoints[-1])
             else:
                 break
-        
-
     
 
     def getNextDefensiveMove(self ,gameState):
@@ -404,7 +412,6 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
 
     def chooseAction(self, gameState):
         
-        
         position = gameState.getAgentPosition(self.index)
         if position == self.target:
             self.target = None
@@ -412,7 +419,8 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
         nearestInvader = []
         minDistance = float("inf")
 
-        
+
+        # Look for enemy position in our home        
         opponentsPositions = self.getOpponents(gameState)
         i = 0
         while i != len(opponentsPositions):
@@ -423,7 +431,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                 invaders.append(opponentPos)
             i = i + 1
 
-        
+        # if enemy is found chase it and kill it
         if len(invaders) > 0:
             for oppPosition in invaders:
                 dist = self.getMazeDistance(oppPosition ,position)
@@ -432,7 +440,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
                     nearestInvader.append(oppPosition)
             self.target = nearestInvader[-1]
 
-        
+        # if enemy has eaten some food, then remove it from targets
         else:
             if len(self.previousFood) > 0:
                 if len(self.getFoodYouAreDefending(gameState).asList()) < len(self.previousFood):
@@ -453,7 +461,7 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
 
         i=0
         
-       
+        # find the best move       
         while i < len(candAct):
             a = candAct[i]
             nextState = gameState.generateSuccessor(self.index, a)
@@ -461,7 +469,6 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
             awsomeMoves.append(a)
             fvalues.append(self.getMazeDistance(newpos, self.target))
             i = i + 1
-
 
         best = min(fvalues)
         bestActions = [a for a, v in zip(awsomeMoves, fvalues) if v == best]
