@@ -31,4 +31,4 @@ Pac-man implementation by UC Berkeley:
 The Pac-man Projects - UC Berkeley (http://ai.berkeley.edu/project_overview.html)
 
 # The complete detailed documentation of the algorithms used and the analysis of the algorithms can be found in the below link.**
-https://gitlab.eng.unimelb.edu.au/920130/comp90054-pacman/wikis/home
+https://github.com/kkkkkaran/Berkeley-PacmanCTF/wiki
